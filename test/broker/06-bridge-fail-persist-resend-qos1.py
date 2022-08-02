@@ -50,12 +50,7 @@ def do_test(proto_ver):
     unsuback_packet = mosq_test.gen_unsuback(1, proto_ver=proto_ver)
 
 
-    if os.environ.get('MOSQ_USE_VALGRIND') is not None:
-        sleep_time = 5
-    else:
-        sleep_time = 0.5
-
-
+    sleep_time = 5 if os.environ.get('MOSQ_USE_VALGRIND') is not None else 0.5
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     sock.settimeout(10)

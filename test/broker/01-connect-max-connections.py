@@ -15,7 +15,7 @@ def do_test():
 
     connect_packets_ok = []
     connack_packets_ok = []
-    for i in range(0, 10):
+    for i in range(10):
         connect_packets_ok.append(mosq_test.gen_connect("max-conn-%d"%i, proto_ver=5))
         connack_packets_ok.append(mosq_test.gen_connack(rc=0, proto_ver=5))
 
@@ -30,8 +30,12 @@ def do_test():
     socks = []
     try:
         # Open all allowed connections, a limit of 10
-        for i in range(0, 10):
-            socks.append(mosq_test.do_client_connect(connect_packets_ok[i], connack_packets_ok[i], port=port))
+        socks.extend(
+            mosq_test.do_client_connect(
+                connect_packets_ok[i], connack_packets_ok[i], port=port
+            )
+            for i in range(10)
+        )
 
         # Try to open an 11th connection
         try:
@@ -41,14 +45,18 @@ def do_test():
             pass
 
         # Close all allowed connections
-        for i in range(0, 10):
+        for i in range(10):
             socks[i].close()
 
         ## Now repeat - check it works as before
 
         # Open all allowed connections, a limit of 10
-        for i in range(0, 10):
-            socks.append(mosq_test.do_client_connect(connect_packets_ok[i], connack_packets_ok[i], port=port))
+        socks.extend(
+            mosq_test.do_client_connect(
+                connect_packets_ok[i], connack_packets_ok[i], port=port
+            )
+            for i in range(10)
+        )
 
         # Try to open an 11th connection
         try:
@@ -58,7 +66,7 @@ def do_test():
             pass
 
         # Close all allowed connections
-        for i in range(0, 10):
+        for i in range(10):
             socks[i].close()
 
         rc = 0
@@ -70,8 +78,8 @@ def do_test():
         os.remove(conf_file)
         broker.terminate()
         broker.wait()
-        (stdo, stde) = broker.communicate()
         if rc:
+            (stdo, stde) = broker.communicate()
             print(stde.decode('utf-8'))
             exit(rc)
 

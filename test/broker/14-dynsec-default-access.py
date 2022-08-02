@@ -18,8 +18,8 @@ def command_check(sock, command_payload, expected_response):
     sock.send(command_packet)
     response = json.loads(mosq_test.read_publish(sock))
     if response != expected_response:
-        print("Expected: %s" % (expected_response))
-        print("Received: %s" % (response))
+        print(f"Expected: {expected_response}")
+        print(f"Received: {response}")
         raise ValueError(response)
 
 

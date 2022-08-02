@@ -40,7 +40,7 @@ try:
     pp = env['PYTHONPATH']
 except KeyError:
     pp = ''
-env['PYTHONPATH'] = '../../lib/python:'+pp
+env['PYTHONPATH'] = f'../../lib/python:{pp}'
 
 
 rc = 1
@@ -56,7 +56,10 @@ publish_packet = mosq_test.gen_publish(topic="psk/test", payload="message", qos=
 
 bridge_cmd = ['../../src/mosquitto', '-c', '08-tls-psk-bridge.conf2']
 broker = mosq_test.start_broker(filename=os.path.basename(__file__), use_conf=True, port=port1)
-bridge = mosq_test.start_broker(filename=os.path.basename(__file__)+'_bridge', cmd=bridge_cmd, port=port3)
+bridge = mosq_test.start_broker(
+    filename=f'{os.path.basename(__file__)}_bridge', cmd=bridge_cmd, port=port3
+)
+
 
 pub = None
 try:

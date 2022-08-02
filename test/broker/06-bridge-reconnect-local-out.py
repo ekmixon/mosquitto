@@ -49,7 +49,13 @@ def do_test(proto_ver):
     broker = mosq_test.start_broker(filename=os.path.basename(__file__), port=port1, use_conf=False)
 
     local_cmd = ['../../src/mosquitto', '-c', '06-bridge-reconnect-local-out.conf']
-    local_broker = mosq_test.start_broker(cmd=local_cmd, filename=os.path.basename(__file__)+'_local1', use_conf=False, port=port2)
+    local_broker = mosq_test.start_broker(
+        cmd=local_cmd,
+        filename=f'{os.path.basename(__file__)}_local1',
+        use_conf=False,
+        port=port2,
+    )
+
     if os.environ.get('MOSQ_USE_VALGRIND') is not None:
         time.sleep(5)
     else:
@@ -60,7 +66,12 @@ def do_test(proto_ver):
         time.sleep(5)
     else:
         time.sleep(0.5)
-    local_broker = mosq_test.start_broker(cmd=local_cmd, filename=os.path.basename(__file__)+'_local2', port=port2)
+    local_broker = mosq_test.start_broker(
+        cmd=local_cmd,
+        filename=f'{os.path.basename(__file__)}_local2',
+        port=port2,
+    )
+
     if os.environ.get('MOSQ_USE_VALGRIND') is not None:
         time.sleep(5)
     else:

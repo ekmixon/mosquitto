@@ -15,12 +15,8 @@ def next_test(tests, ports):
         tests.insert(0, test)
         return None
     else:
-        if isinstance(test[1], (list,)):
-            args = test[1]
-        else:
-            args = [test[1]]
-
-        for i in range(0, test[0]):
+        args = test[1] if isinstance(test[1], (list,)) else [test[1]]
+        for _ in range(test[0]):
             proc_port = ports.pop()
             proc_ports = proc_ports + (proc_port,)
             args.append(str(proc_port))
@@ -40,7 +36,7 @@ def run_tests(tests, minport=1888, max_running=20):
     failed_tests = []
 
     running_tests = []
-    while len(tests) > 0 or len(running_tests) > 0:
+    while len(tests) > 0 or running_tests:
         if len(running_tests) <= max_running:
             t = next_test(tests, ports)
             if t is None:
@@ -53,8 +49,7 @@ def run_tests(tests, minport=1888, max_running=20):
             if t.returncode is not None:
                 running_tests.remove(t)
                 if isinstance(t.mosq_port, tuple):
-                    for portret in t.mosq_port:
-                        ports.append(portret)
+                    ports.extend(iter(t.mosq_port))
                 else:
                     ports.append(t.mosq_port)
                 t.terminate()

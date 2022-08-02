@@ -67,11 +67,7 @@ def write_config_core(filename, listen_port, persistence_file):
 
 def do_test(proto_ver, cs, lcs=None):
     tprint("Running test with cs:%s, lcs: %s and proto: %d" % (cs, lcs, proto_ver))
-    if proto_ver == 4:
-        bridge_protocol = "mqttv311"
-    else:
-        bridge_protocol = "mqttv50"
-
+    bridge_protocol = "mqttv311" if proto_ver == 4 else "mqttv50"
     # Match default behaviour of broker
     expect_queued_ab = True
     expect_queued_ba = True
@@ -95,11 +91,12 @@ def do_test(proto_ver, cs, lcs=None):
     AckedPair = namedtuple("AckedPair", "p ack")
 
     def make_conn(client_tag, proto, cs, session_present=False):
-        client_id = socket.gethostname() + "." + client_tag
+        client_id = f"{socket.gethostname()}.{client_tag}"
         keepalive = 60
         conn = mosq_test.gen_connect(client_id, keepalive=keepalive, clean_session=cs, proto_ver=proto, session_expiry=0 if cs else 5000)
         connack = mosq_test.gen_connack(rc=0, proto_ver=proto_ver, flags=1 if session_present else 0)
         return AckedPair(conn, connack)
+
 
 
     def make_sub(topic, mid, qos, proto):
@@ -115,7 +112,15 @@ def do_test(proto_ver, cs, lcs=None):
     def make_pub(topic, mid, proto, qos=1, payload_tag="message", rc=-1):
         # Using the mid automatically makes it hard to verify messages that might have been retransmitted.
         # encourage users to put sequence numbers in topics instead....
-        pub = mosq_test.gen_publish(topic, mid=mid, qos=qos, retain=False, payload=payload_tag + "-from-" + topic, proto_ver=proto)
+        pub = mosq_test.gen_publish(
+            topic,
+            mid=mid,
+            qos=qos,
+            retain=False,
+            payload=f"{payload_tag}-from-{topic}",
+            proto_ver=proto,
+        )
+
         puback = mosq_test.gen_puback(mid, proto_ver=proto, reason_code=rc)
         return AckedPair(pub, puback)
 

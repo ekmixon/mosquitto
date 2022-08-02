@@ -50,13 +50,7 @@ def do_test(proto_ver, per_listener, username):
     connect_packet = mosq_test.gen_connect("retain-check", keepalive=keepalive, username=username, proto_ver=proto_ver)
     connack_packet = mosq_test.gen_connack(rc=0, proto_ver=proto_ver)
 
-    if per_listener == "true":
-        u = None
-    else:
-        # If per listener is false, then the second client will be denied
-        # unless we provide a username
-        u = username
-
+    u = None if per_listener == "true" else username
     connect2_packet = mosq_test.gen_connect("retain-recv", keepalive=keepalive, username=u, proto_ver=proto_ver)
     connack2_packet = mosq_test.gen_connack(rc=0, proto_ver=proto_ver)
 

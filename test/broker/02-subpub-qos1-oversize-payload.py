@@ -59,9 +59,7 @@ def do_test(proto_ver):
         rc = 0
 
         sock.close()
-    except SyntaxError:
-        raise
-    except TypeError:
+    except (SyntaxError, TypeError):
         raise
     except mosq_test.TestError:
         pass

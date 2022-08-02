@@ -30,18 +30,25 @@ def start_broker(filename, cmd=None, port=0, use_conf=False, expect_fail=False, 
 
         if port == 0:
             port = 1888
-    else:
-        if cmd is None and port != 0:
-            cmd = ['../../src/mosquitto', '-v', '-p', str(port)]
-        elif cmd is None and port == 0:
-            port = 1888
-            cmd = ['../../src/mosquitto', '-v', '-c', filename.replace('.py', '.conf')]
-        elif cmd is not None and port == 0:
-            port = 1888
+    elif cmd is None and port != 0:
+        cmd = ['../../src/mosquitto', '-v', '-p', str(port)]
+    elif cmd is None:
+        port = 1888
+        cmd = ['../../src/mosquitto', '-v', '-c', filename.replace('.py', '.conf')]
+    elif port == 0:
+        port = 1888
 
     if os.environ.get('MOSQ_USE_VALGRIND') is not None:
-        logfile = filename+'.'+str(vg_index)+'.vglog'
-        cmd = ['valgrind', '-q', '--trace-children=yes', '--leak-check=full', '--show-leak-kinds=all', '--log-file='+logfile] + cmd
+        logfile = f'{filename}.{str(vg_index)}.vglog'
+        cmd = [
+            'valgrind',
+            '-q',
+            '--trace-children=yes',
+            '--leak-check=full',
+            '--show-leak-kinds=all',
+            f'--log-file={logfile}',
+        ] + cmd
+
         vg_logfiles.append(logfile)
         vg_index += 1
         delay = 1
@@ -52,7 +59,7 @@ def start_broker(filename, cmd=None, port=0, use_conf=False, expect_fail=False, 
         broker = subprocess.Popen(cmd, stderr=subprocess.PIPE)
     else:
         broker = subprocess.Popen(cmd, stderr=subprocess.DEVNULL)
-    for i in range(0, 20):
+    for _ in range(20):
         time.sleep(delay)
         c = None
         try:
@@ -65,29 +72,24 @@ def start_broker(filename, cmd=None, port=0, use_conf=False, expect_fail=False, 
             c.close()
             return broker
 
-    if expect_fail == False:
-        outs, errs = broker.communicate(timeout=1)
-        print("FAIL: unable to start broker: %s" % errs)
-        raise IOError
-    else:
+    if expect_fail != False:
         return None
+    outs, errs = broker.communicate(timeout=1)
+    print(f"FAIL: unable to start broker: {errs}")
+    raise IOError
 
 def start_client(filename, cmd, env, port=1888):
     if cmd is None:
         raise ValueError
     if os.environ.get('MOSQ_USE_VALGRIND') is not None:
-        cmd = ['valgrind', '-q', '--log-file='+filename+'.vglog'] + cmd
+        cmd = ['valgrind', '-q', f'--log-file={filename}.vglog'] + cmd
 
     cmd = cmd + [str(port)]
     return subprocess.Popen(cmd, env=env)
 
 
 def expect_packet(sock, name, expected):
-    if len(expected) > 0:
-        rlen = len(expected)
-    else:
-        rlen = 1
-
+    rlen = len(expected) if len(expected) > 0 else 1
     packet_recvd = sock.recv(rlen)
     if packet_matches(name, packet_recvd, expected):
         return True
@@ -96,20 +98,19 @@ def expect_packet(sock, name, expected):
 
 
 def packet_matches(name, recvd, expected):
-    if recvd != expected:
-        print("FAIL: Received incorrect "+name+".")
-        try:
-            print("Received: "+to_string(recvd))
-        except struct.error:
-            print("Received (not decoded, len=%d): %s" % (len(recvd), recvd))
-        try:
-            print("Expected: "+to_string(expected))
-        except struct.error:
-            print("Expected (not decoded, len=%d): %s" % (len(expected), expected))
-
-        return False
-    else:
+    if recvd == expected:
         return True
+    print(f"FAIL: Received incorrect {name}.")
+    try:
+        print(f"Received: {to_string(recvd)}")
+    except struct.error:
+        print("Received (not decoded, len=%d): %s" % (len(recvd), recvd))
+    try:
+        print(f"Expected: {to_string(expected)}")
+    except struct.error:
+        print("Expected (not decoded, len=%d): %s" % (len(expected), expected))
+
+    return False
 
 
 def receive_unordered(sock, recv1_packet, recv2_packet, error_string):
@@ -122,11 +123,10 @@ def receive_unordered(sock, recv1_packet, recv2_packet, error_string):
             raise ValueError(error_string)
         recvd += r
 
-    if recvd == expected1 or recvd == expected2:
+    if recvd in [expected1, expected2]:
         return
-    else:
-        packet_matches(error_string, recvd, expected2)
-        raise ValueError(error_string)
+    packet_matches(error_string, recvd, expected2)
+    raise ValueError(error_string)
 
 
 def do_send_receive(sock, send_packet, receive_packet, error_string="send receive error"):
@@ -140,9 +140,8 @@ def do_send_receive(sock, send_packet, receive_packet, error_string="send receiv
 
     if expect_packet(sock, error_string, receive_packet):
         return sock
-    else:
-        sock.close()
-        raise ValueError
+    sock.close()
+    raise ValueError
 
 
 # Useful for mocking a client receiving (with ack) a qos1 publish

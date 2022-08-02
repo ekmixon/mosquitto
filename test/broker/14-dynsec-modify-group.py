@@ -195,7 +195,6 @@ finally:
     os.remove(conf_file)
     try:
         os.remove(f"{port}/dynamic-security.json")
-        pass
     except FileNotFoundError:
         pass
     os.rmdir(f"{port}")

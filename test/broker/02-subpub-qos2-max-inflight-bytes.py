@@ -21,7 +21,7 @@ def send_small(port):
 
     sock = mosq_test.do_client_connect(connect_packet, connack_packet, port=port)
 
-    for i in range(0, 10):
+    for i in range(10):
         mid = 1+i
         publish_packet = mosq_test.gen_publish("subpub/qos2", qos=2, mid=mid, payload=str(i+1))
         pubrec_packet = mosq_test.gen_pubrec(mid)
@@ -58,7 +58,7 @@ def do_test(proto_ver):
 
         # Repeat many times to stress the send quota
         mid = 0
-        for i in range(0, 12):
+        for _ in range(12):
             pub = subprocess.Popen(['./02-subpub-qos2-receive-maximum-helper.py', str(port)], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             pub.wait()
             (stdo, stde) = pub.communicate()
@@ -133,7 +133,7 @@ def do_test(proto_ver):
         mosq_test.expect_packet(sock, "publish3s", publish_packet3)
         mosq_test.expect_packet(sock, "publish4s", publish_packet4)
         mosq_test.expect_packet(sock, "publish5s", publish_packet5)
-        
+
         mosq_test.do_send_receive(sock, pubrec_packet1, pubrel_packet1, "pubrel1s")
         mosq_test.do_send_receive(sock, pubrec_packet2, pubrel_packet2, "pubrel2s")
         mosq_test.do_send_receive(sock, pubrec_packet3, pubrel_packet3, "pubrel3s")

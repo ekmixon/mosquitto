@@ -28,7 +28,7 @@ try:
     pp = env['PYTHONPATH']
 except KeyError:
     pp = ''
-env['PYTHONPATH'] = '../../lib/python:'+pp
+env['PYTHONPATH'] = f'../../lib/python:{pp}'
 
 
 rc = 1

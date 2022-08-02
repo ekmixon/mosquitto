@@ -8,7 +8,7 @@ import sys
 class CurrentCostMQTT(gnomeapplet.Applet):
     def on_message(self, mosq, obj, msg):
         # Message format is "power"
-        self.label.set_text(msg.payload+"W")
+        self.label.set_text(f"{msg.payload}W")
 
     def set_label(self, val):
         self.label.set_text(val)
@@ -48,17 +48,16 @@ def CurrentCostMQTT_factory(applet, iid):
     CurrentCostMQTT(applet, iid)
     return gtk.TRUE
 
-if len(sys.argv) == 2:
-    if sys.argv[1] == "-d": #Debug mode
-        main_window = gtk.Window(gtk.WINDOW_TOPLEVEL)
-        main_window.set_title("Python Applet")
-        main_window.connect("destroy", gtk.main_quit)
-        app = gnomeapplet.Applet()
-        CurrentCostMQTT_factory(app,None)
-        app.reparent(main_window)
-        main_window.show_all()
-        gtk.main()
-        sys.exit()
+if len(sys.argv) == 2 and sys.argv[1] == "-d":
+    main_window = gtk.Window(gtk.WINDOW_TOPLEVEL)
+    main_window.set_title("Python Applet")
+    main_window.connect("destroy", gtk.main_quit)
+    app = gnomeapplet.Applet()
+    CurrentCostMQTT_factory(app,None)
+    app.reparent(main_window)
+    main_window.show_all()
+    gtk.main()
+    sys.exit()
 
 if __name__ == '__main__':
     gnomeapplet.bonobo_factory("OAFIID:CurrentCostMQTT_Factory", gnomeapplet.Applet.__gtype__, "MQTT", "0", CurrentCostMQTT_factory)

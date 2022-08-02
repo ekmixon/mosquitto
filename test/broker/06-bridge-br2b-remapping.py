@@ -42,9 +42,7 @@ def inner_test(bridge, sock, proto_ver):
         ('local5/topic/something', None),
     ]
 
-    mid = 3
-    for (local_topic, remote_topic) in cases:
-        mid += 1
+    for mid, (local_topic, remote_topic) in enumerate(cases, start=4):
         local_publish_packet = mosq_test.gen_publish(
             local_topic, qos=0, mid=mid, payload='', proto_ver=proto_ver
         )
@@ -84,7 +82,7 @@ def do_test(proto_ver):
 
     rc = 1
     keepalive = 60
-    client_id = socket.gethostname()+".bridge_sample"
+    client_id = f"{socket.gethostname()}.bridge_sample"
     connect_packet = mosq_test.gen_connect(client_id, keepalive=keepalive, clean_session=False, proto_ver=proto_ver_connect)
     connack_packet = mosq_test.gen_connack(rc=0, proto_ver=proto_ver)
 

@@ -29,31 +29,28 @@ PROP_SUBSCRIPTION_ID_AVAILABLE = 41
 PROP_SHARED_SUB_AVAILABLE = 42
 
 def gen_byte_prop(identifier, byte):
-    prop = struct.pack('BB', identifier, byte)
-    return prop
+    return struct.pack('BB', identifier, byte)
 
 def gen_uint16_prop(identifier, word):
-    prop = struct.pack('!BH', identifier, word)
-    return prop
+    return struct.pack('!BH', identifier, word)
 
 def gen_uint32_prop(identifier, word):
-    prop = struct.pack('!BI', identifier, word)
-    return prop
+    return struct.pack('!BI', identifier, word)
 
 def gen_string_prop(identifier, s):
     s = s.encode("utf-8")
-    prop = struct.pack('!BH%ds'%(len(s)), identifier, len(s), s)
-    return prop
+    return struct.pack('!BH%ds'%(len(s)), identifier, len(s), s)
 
 def gen_string_pair_prop(identifier, s1, s2):
     s1 = s1.encode("utf-8")
     s2 = s2.encode("utf-8")
-    prop = struct.pack('!BH%dsH%ds'%(len(s1), len(s2)), identifier, len(s1), s1, len(s2), s2)
-    return prop
+    return struct.pack(
+        '!BH%dsH%ds' % (len(s1), len(s2)), identifier, len(s1), s1, len(s2), s2
+    )
 
 def gen_varint_prop(identifier, val):
     v = pack_varint(val)
-    return struct.pack("!B"+str(len(v))+"s", identifier, v)
+    return struct.pack(f"!B{len(v)}s", identifier, v)
 
 def pack_varint(varint):
     s = b""

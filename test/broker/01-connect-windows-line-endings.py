@@ -19,16 +19,12 @@ def do_test():
     broker = mosq_test.start_broker(filename=os.path.basename(__file__), use_conf=True, port=port)
 
     try:
+        keepalive = 10
         for proto_ver in [4, 5]:
             rc = 1
-            keepalive = 10
             connect_packet = mosq_test.gen_connect("connect-anon-test-%d" % (proto_ver), keepalive=keepalive, proto_ver=proto_ver)
 
-            if proto_ver == 5:
-                connack_packet = mosq_test.gen_connack(rc=0, proto_ver=proto_ver)
-            else:
-                connack_packet = mosq_test.gen_connack(rc=0, proto_ver=proto_ver)
-
+            connack_packet = mosq_test.gen_connack(rc=0, proto_ver=proto_ver)
             sock = mosq_test.do_client_connect(connect_packet, connack_packet, port=port)
             sock.close()
             rc = 0

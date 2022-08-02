@@ -32,7 +32,7 @@ def do_test(clean_start):
         sock.send(connect_packet)
         connack_recvd = sock.recv(len(connack_packet))
 
-        if connack_recvd[0:12] == connack_packet[0:12]:
+        if connack_recvd[:12] == connack_packet[:12]:
             # FIXME - this test could be tightened up a lot
             rc = 0
 
